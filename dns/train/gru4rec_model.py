@@ -1,16 +1,17 @@
-from typing import List
+from typing import Dict
 
 import tensorflow as tf
 from keras import utils
 from tensorflow import keras
 
 from dns.train.config import Config
-from dns.train.losses import SoftmaxCrossEntropy, BprLoss
+from dns.train.losses import SoftmaxCrossEntropy, SampledSoftmaxCrossEntropy, BprLoss
 
 
 class Gru4RecModel(keras.models.Model):
-    def __init__(self, movie_id_vocab: List[str], config: Config):
+    def __init__(self, movie_id_counts: Dict[str, int], config: Config):
         super().__init__()
+        movie_id_vocab = list(movie_id_counts.keys())
         self._movie_id_vocab = movie_id_vocab
         self._inverse_movie_id_lookup = tf.keras.layers.StringLookup(
             vocabulary=movie_id_vocab, invert=True, oov_token="0"
@@ -18,7 +19,7 @@ class Gru4RecModel(keras.models.Model):
         vocab_length = len(movie_id_vocab)
         self._movie_id_embedding = tf.keras.layers.Embedding(vocab_length + 1, config.embedding_dimension)
         self._gru_layer = tf.keras.layers.GRU(config.embedding_dimension)
-        self._loss = self._get_loss(config, vocab_length)
+        self._loss = self._get_loss(config, vocab_length, movie_id_counts)
         self._config = config
 
     @classmethod
@@ -31,9 +32,11 @@ class Gru4RecModel(keras.models.Model):
         super_config = super().get_config()
         return {"movie_id_vocab": self._movie_id_vocab, "config": self._config.to_json(), **super_config}
 
-    def _get_loss(self, config: Config, vocab_length: int):
+    def _get_loss(self, config: Config, vocab_length: int, movie_id_counts: Dict[str, int]):
         if config.loss_type == "sm":
             return SoftmaxCrossEntropy(self._movie_id_embedding)
+        if config.loss_type == "sampled-sm":
+            return SampledSoftmaxCrossEntropy(vocab_length, movie_id_counts, self._movie_id_embedding)
         if config.loss_type == "bpr":
             return BprLoss(self._movie_id_embedding)
         raise Exception(f"Unknown softmax type: {config.loss_type}")
@@ -63,7 +66,6 @@ class Gru4RecModel(keras.models.Model):
         metric_results = self.compute_metrics(
             x=None, y=inputs["label_movie_id"], y_pred=top_indices, sample_weight=None
         )
-
         return {"loss": loss_val, **metric_results}
 
     def _get_top_indices(self, logits, at_k):

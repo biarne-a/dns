@@ -1,5 +1,6 @@
 import sys
 
+# import tensorflow as tf
 from tensorflow import keras
 
 from dns.train.config import Config
@@ -17,7 +18,7 @@ def get_callbacks(config: Config, model: keras.models.Model):
 
 
 def build_model(data: Data, config: Config):
-    return Gru4RecModel(data.movie_id_vocab, config)
+    return Gru4RecModel(data.movie_id_counts, config)
 
 
 def _debugger_is_active() -> bool:
@@ -30,9 +31,8 @@ def run_training(config: Config):
 
     model = build_model(data, config)
     model.compile(
-        # optimizer=keras.optimizers.Adagrad(learning_rate=2e-1),
         optimizer=keras.optimizers.Adam(learning_rate=1e-3),
-        metrics=[CustomRecall(k=5), CustomRecall(k=10), CustomRecall(k=100), CustomRecall(k=500)],
+        metrics=[CustomRecall(k=5), CustomRecall(k=10), CustomRecall(k=100)],
         run_eagerly=_debugger_is_active(),
     )
     history = model.fit(

@@ -1,7 +1,7 @@
 # -*- mode: makefile -*-
 install_mac_m2:
 	#conda create --name=dns-m2 python=3.9
-	#conda activate mos-m2
+	#conda activate dns-m2
 	conda install -c apple tensorflow-deps
 	pip install tensorflow-macos==2.14 tensorflow-metal
 	conda install -c conda-forge --file requirements.in

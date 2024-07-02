@@ -24,7 +24,8 @@ class SampledSoftmaxCrossEntropy(keras.layers.Layer):
 
         sample_range = self._vocab_length + 1   # +1 to account for the default embedding at index 0
         labels = tf.reshape(tf.cast(label, dtype=tf.int64), [-1, 1])
-        num_neg_samples = self._vocab_length // 45
+        # num_neg_samples = self._vocab_length // 45
+        num_neg_samples = 100
         sampled_values = tf.nn.fixed_unigram_candidate_sampler(
             true_classes=labels,  # list of target-ids (ground-truths) [batch_size x _nb_videos]
             num_true=1,  # ground-truth labels are vectors of len 1 (not a multi-class classification)

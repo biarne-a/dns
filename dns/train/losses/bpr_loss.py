@@ -17,8 +17,7 @@ class BprLoss(tf.keras.layers.Layer):
         # Exclude differences from positive labels with itself
         label_mask = 1 - tf.one_hot(label, logits.shape[1])
         loss = tf.multiply(loss, label_mask)
-
-        loss = tf.reduce_mean(loss)
+        loss = tf.reduce_mean(tf.reduce_mean(loss, axis=1))
         return logits, loss
 
 

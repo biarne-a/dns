@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -9,7 +10,9 @@ from dns.train.config import Config
 
 
 def save_history(history: keras.callbacks.History, config: Config):
-    output_file = f"{config.data_dir}/results/history_{config.exp_name}.p"
+    results_dir = f"{config.data_dir}/results"
+    os.makedirs(results_dir, exist_ok=True)
+    output_file = f"{results_dir}/history_{config.exp_name}.p"
     pickle.dump(history.history, tf.io.gfile.GFile(output_file, "wb"))
 
 

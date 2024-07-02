@@ -5,7 +5,16 @@ from keras import utils
 from tensorflow import keras
 
 from dns.train.config import Config
-from dns.train.losses import SoftmaxCrossEntropy, SampledSoftmaxCrossEntropy, BprLoss
+from dns.train.losses import (
+    SoftmaxCrossEntropy,
+    SampledSoftmaxCrossEntropy,
+    BprLoss,
+    SampledBprLoss,
+    DynamicBprLoss,
+    MaxBprLoss,
+    SoftmaxMRL,
+    DynamicBprMRL
+)
 
 
 class Gru4RecModel(keras.models.Model):
@@ -37,8 +46,18 @@ class Gru4RecModel(keras.models.Model):
             return SoftmaxCrossEntropy(self._movie_id_embedding)
         if config.loss_type == "sampled-sm":
             return SampledSoftmaxCrossEntropy(vocab_length, movie_id_counts, self._movie_id_embedding)
+        if config.loss_type == "softmax-mrl":
+            return SoftmaxMRL(self._movie_id_embedding)
         if config.loss_type == "bpr":
             return BprLoss(self._movie_id_embedding)
+        if config.loss_type == "sampled-bpr":
+            return SampledBprLoss(vocab_length, movie_id_counts, self._movie_id_embedding)
+        if config.loss_type == "dynamic-bpr-mrl":
+            return DynamicBprMRL(self._movie_id_embedding)
+        if config.loss_type == "max-bpr":
+            return MaxBprLoss(self._movie_id_embedding)
+        if config.loss_type == "dynamic-bpr":
+            return DynamicBprLoss(self._movie_id_embedding)
         raise Exception(f"Unknown softmax type: {config.loss_type}")
 
     def call(self, inputs, training=False):

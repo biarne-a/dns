@@ -2,7 +2,7 @@ import keras
 import tensorflow as tf
 
 
-class SoftmaxCrossEntropy(keras.layers.Layer):
+class SoftmaxMRL(keras.layers.Layer):
     def __init__(self, movie_id_embedding: keras.layers.Embedding):
         super().__init__()
         self._movie_id_embedding = movie_id_embedding
